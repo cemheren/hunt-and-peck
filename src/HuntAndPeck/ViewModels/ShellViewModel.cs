@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
 using System.Windows.Forms;
+using HuntAndPeck.Extensions;
 using HuntAndPeck.NativeMethods;
 using HuntAndPeck.Services.Interfaces;
 using Application = System.Windows.Application;
@@ -34,8 +38,7 @@ namespace HuntAndPeck.ViewModels
 
             keyListener1.HotKey = new HotKey
             {
-                Keys = Keys.OemSemicolon,
-                Modifier = KeyModifier.Alt
+                Keys = Keys.F
             };
 
 #if DEBUG
@@ -58,21 +61,30 @@ namespace HuntAndPeck.ViewModels
 
         private void _keyListener_OnHotKeyActivated(object sender, EventArgs e)
         {
-            var session = _hintProviderService.EnumHints();
-            if (session != null)
-            {
+            var foregroundWindow = User32.GetForegroundWindow();
 
-                var vm = new OverlayViewModel(session, _hintLabelService);
-                _showOverlay(vm);
+            if (foregroundWindow != IntPtr.Zero)
+            {
+                var bound = foregroundWindow.GetWindowBounds();
+
+                foreach(var chunk in _hintProviderService.EnumHints(foregroundWindow).Chunk(800))
+                {
+                    var vm = new OverlayViewModel(chunk, bound, foregroundWindow, _hintLabelService, _hintProviderService);
+                   _showOverlay(vm);
+                }
             }
         }
 
         private void _keyListener_OnDebugHotKeyActivated(object sender, EventArgs e)
         {
-            var session = _debugHintProviderService.EnumDebugHints();
-            if (session != null)
+            var foregroundWindow = User32.GetForegroundWindow();
+
+            if (foregroundWindow != IntPtr.Zero)
             {
-                var vm = new DebugOverlayViewModel(session);
+                var bound = foregroundWindow.GetWindowBounds();
+                var hints = _debugHintProviderService.EnumDebugHints(foregroundWindow);
+            
+                var vm = new DebugOverlayViewModel(hints, bound);
                 _showDebugOverlay(vm);
             }
         }

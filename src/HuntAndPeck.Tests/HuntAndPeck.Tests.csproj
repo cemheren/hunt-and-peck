@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HuntAndPeck.Tests</RootNamespace>
     <AssemblyName>HuntAndPeck.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
@@ -61,12 +61,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\HintLabelServiceTest.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\HuntAndPeck\HuntAndPeck.csproj">
-      <Project>{d9a0620d-d51f-4fcf-821e-aadd36230830}</Project>
-      <Name>HuntAndPeck</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

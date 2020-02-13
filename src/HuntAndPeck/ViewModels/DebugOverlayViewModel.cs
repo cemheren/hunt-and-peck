@@ -9,10 +9,10 @@ namespace HuntAndPeck.ViewModels
     {
         private Rect _bounds;
 
-        public DebugOverlayViewModel(HintSession session)
+        public DebugOverlayViewModel(IEnumerable<Hint> hints, Rect bounds)
         {
-            Bounds = session.OwningWindowBounds;
-            Hints = session.Hints.OfType<DebugHint>().Select(x => new DebugHintViewModel(x)).ToList();
+            Bounds = bounds;
+            Hints = hints.OfType<DebugHint>().Select(x => new DebugHintViewModel(x)).ToList();
         }
 
         public List<DebugHintViewModel> Hints { get; set; }

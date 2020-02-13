@@ -4,29 +4,39 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using HuntAndPeck.Models;
 using HuntAndPeck.Services.Interfaces;
+using System.Collections.Generic;
 
 namespace HuntAndPeck.ViewModels
 {
     internal class OverlayViewModel : NotifyPropertyChanged
     {
         private Rect _bounds;
+        private readonly IntPtr owningWindow;
+        private readonly IHintProviderService hintProviderService;
         private ObservableCollection<HintViewModel> _hints = new ObservableCollection<HintViewModel>();
 
         public OverlayViewModel(
-            HintSession session,
-            IHintLabelService hintLabelService)
+            IEnumerable<Hint> hints,
+            Rect owningWindowBounds,
+            IntPtr owningWindow,
+            IHintLabelService hintLabelService,
+            IHintProviderService hintProviderService)
         {
-            _bounds = session.OwningWindowBounds;
+            _bounds = owningWindowBounds;
+            this.owningWindow = owningWindow;
+            this.hintProviderService = hintProviderService;
+            var labels = hintLabelService.GetHintStrings(hints.Count());
 
-            var labels = hintLabelService.GetHintStrings(session.Hints.Count());
-            for (int i = 0; i < labels.Count; ++i)
+            var i = 0;
+            foreach (var hint in hints)
             {
-                var hint = session.Hints[i];
                 _hints.Add(new HintViewModel(hint)
                 {
                     Label = labels[i],
                     Active = false
                 });
+
+                i++;
             }
         }
 
@@ -80,6 +90,7 @@ namespace HuntAndPeck.ViewModels
                 {
                     matching.First().Hint.Invoke();
                     CloseOverlay?.Invoke();
+                    this.hintProviderService.Invalidate(this.owningWindow);
                 }
             }
         }

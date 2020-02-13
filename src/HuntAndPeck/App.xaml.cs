@@ -3,6 +3,8 @@ using HuntAndPeck.ViewModels;
 using System.Linq;
 using HuntAndPeck.Services;
 using HuntAndPeck.Views;
+using HuntAndPeck.NativeMethods;
+using HuntAndPeck.Extensions;
 
 namespace HuntAndPeck
 {
@@ -15,6 +17,7 @@ namespace HuntAndPeck
         private readonly UiAutomationHintProviderService _hintProviderService = new UiAutomationHintProviderService();
         private readonly HintLabelService _hintLabelService = new HintLabelService();
         private KeyListenerService _keyListenerService;
+        private ForegroundAppCachingService _cachingService;
 
         private void ShowOverlay(OverlayViewModel vm)
         {
@@ -48,11 +51,13 @@ namespace HuntAndPeck
         {
             if (e.Args.Contains("/hint"))
             {
+                var foregroundWindow = User32.GetForegroundWindow();
+                
                 // support headless mode
-                var session = _hintProviderService.EnumHints();
+                var hints = _hintProviderService.EnumHints(foregroundWindow);
                 var overlayWindow = new OverlayView()
                 {
-                    DataContext = new OverlayViewModel(session, _hintLabelService)
+                    DataContext = new OverlayViewModel(hints, foregroundWindow.GetWindowBounds(), foregroundWindow, _hintLabelService, _hintProviderService)
                 };
                 overlayWindow.Show();
             }
@@ -68,12 +73,15 @@ namespace HuntAndPeck
                 // Create this as late as possible as it has a window
                 _keyListenerService = new KeyListenerService();
 
+                _cachingService = new ForegroundAppCachingService(_hintProviderService);
+                _cachingService.Start();
+
                 var shellViewModel = new ShellViewModel(
                     ShowOverlay,
                     ShowDebugOverlay,
                     ShowOptions,
                     _hintLabelService,
-                    _hintProviderService,
+                    _cachingService,
                     _hintProviderService,
                     _keyListenerService);
 

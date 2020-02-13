@@ -39,5 +39,13 @@ namespace HuntAndPeck.Extensions
 
             return result;
         }
+
+        public static Rect GetWindowBounds(this IntPtr hWnd)
+        {
+            var rawWindowBounds = new RECT();
+            User32.GetWindowRect(hWnd, ref rawWindowBounds);
+            Rect windowBounds = rawWindowBounds;
+            return windowBounds;
+        }
     }
 }

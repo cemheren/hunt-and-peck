@@ -15,17 +15,7 @@ namespace HuntAndPeck.Services
     {
         private readonly IUIAutomation _automation = new CUIAutomation();
 
-        public HintSession EnumHints()
-        {
-            var foregroundWindow = User32.GetForegroundWindow();
-            if (foregroundWindow == IntPtr.Zero)
-            {
-                return null;
-            }
-            return EnumHints(foregroundWindow);
-        }
-
-        public HintSession EnumHints(IntPtr hWnd)
+        public IEnumerable<Hint> EnumHints(IntPtr hWnd)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -36,17 +26,7 @@ namespace HuntAndPeck.Services
             return session;
         }
 
-        public HintSession EnumDebugHints()
-        {
-            var foregroundWindow = User32.GetForegroundWindow();
-            if (foregroundWindow == IntPtr.Zero)
-            {
-                return null;
-            }
-            return EnumDebugHints(foregroundWindow);
-        }
-
-        public HintSession EnumDebugHints(IntPtr hWnd)
+        public IEnumerable<Hint> EnumDebugHints(IntPtr hWnd)
         {
             return EnumWindowHints(hWnd, CreateDebugHint);
         }
@@ -57,9 +37,8 @@ namespace HuntAndPeck.Services
         /// <param name="hWnd">The window to get hints from</param>
         /// <param name="hintFactory">The factory to use to create each hint in the session</param>
         /// <returns>A hint session</returns>
-        private HintSession EnumWindowHints(IntPtr hWnd, Func<IntPtr, Rect, IUIAutomationElement, Hint> hintFactory)
+        private IEnumerable<Hint> EnumWindowHints(IntPtr hWnd, Func<IntPtr, Rect, IUIAutomationElement, Hint> hintFactory)
         {
-            var result = new List<Hint>();
             var elements = EnumElements(hWnd);
 
             // Window bounds
@@ -81,18 +60,11 @@ namespace HuntAndPeck.Services
                         var hint = hintFactory(hWnd, windowCoords, element);
                         if (hint != null)
                         {
-                            result.Add(hint);
+                            yield return hint;
                         }
                     }
                 }
             }
-
-            return new HintSession
-            {
-                Hints = result,
-                OwningWindow = hWnd,
-                OwningWindowBounds = windowBounds,
-            };
         }
 
         /// <summary>
@@ -100,9 +72,8 @@ namespace HuntAndPeck.Services
         /// </summary>
         /// <param name="hWnd">The window handle</param>
         /// <returns>All of the automation elements found</returns>
-        private List<IUIAutomationElement> EnumElements(IntPtr hWnd)
+        private IEnumerable<IUIAutomationElement> EnumElements(IntPtr hWnd)
         {
-            var result = new List<IUIAutomationElement>();
             var automationElement = _automation.ElementFromHandle(hWnd);
 
             var conditionControlView = _automation.ControlViewCondition;
@@ -112,13 +83,29 @@ namespace HuntAndPeck.Services
             var conditionOnScreen = _automation.CreatePropertyCondition(UIA_PropertyIds.UIA_IsOffscreenPropertyId, false);
             var condition = _automation.CreateAndCondition(enabledControlCondition, conditionOnScreen);
 
-            var elementArray = automationElement.FindAll(TreeScope.TreeScope_Descendants, condition);
+            var elementArray = automationElement.FindAll(TreeScope.TreeScope_Children, condition);
+            var elementsQueue = new Queue<IUIAutomationElement>(10);
+
             for (var i = 0; i < elementArray.Length; ++i)
             {
-                result.Add(elementArray.GetElement(i));
+                elementsQueue.Enqueue(elementArray.GetElement(i));
             }
 
-            return result;
+            while (elementsQueue.Count > 0)
+            {
+                var peek = elementsQueue.Dequeue();
+                var temp = peek.FindAll(TreeScope.TreeScope_Children, condition);
+
+                if (temp != null)
+                {
+                    for (var i = 0; i < temp.Length; ++i)
+                    {
+                        elementsQueue.Enqueue(temp.GetElement(i));
+                    }
+                }
+
+                yield return peek;
+            }
         }
 
         /// <summary>
@@ -210,6 +197,11 @@ namespace HuntAndPeck.Services
             }
 
             return null;
+        }
+
+        public void Invalidate(IntPtr hWin)
+        {
+            throw new NotImplementedException();
         }
     }
 }

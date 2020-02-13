@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using HuntAndPeck.Models;
 
 namespace HuntAndPeck.Services.Interfaces
 {
     public interface IDebugHintProviderService
     {
-        HintSession EnumDebugHints();
-        HintSession EnumDebugHints(IntPtr hWnd);
+        IEnumerable<Hint> EnumDebugHints(IntPtr hWnd);
     }
 }

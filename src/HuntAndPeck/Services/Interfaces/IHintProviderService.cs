@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using HuntAndPeck.Models;
 
 namespace HuntAndPeck.Services.Interfaces
@@ -12,6 +14,8 @@ namespace HuntAndPeck.Services.Interfaces
         /// Enumerate the available hints for the current foreground window
         /// </summary>
         /// <returns>The hint session containing the available hints or null if there is no foreground window</returns>
-        HintSession EnumHints();
+        IEnumerable<Hint> EnumHints(IntPtr hWin);
+
+        void Invalidate(IntPtr hWin);
     }
 }
