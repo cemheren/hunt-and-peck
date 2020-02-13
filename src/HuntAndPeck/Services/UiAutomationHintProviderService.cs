@@ -78,12 +78,15 @@ namespace HuntAndPeck.Services
 
             var conditionControlView = _automation.ControlViewCondition;
             var conditionEnabled = _automation.CreatePropertyCondition(UIA_PropertyIds.UIA_IsEnabledPropertyId, true);
-            var enabledControlCondition = _automation.CreateAndCondition(conditionControlView, conditionEnabled);
+            var conditions = _automation.CreateAndCondition(conditionControlView, conditionEnabled);
 
             var conditionOnScreen = _automation.CreatePropertyCondition(UIA_PropertyIds.UIA_IsOffscreenPropertyId, false);
-            var condition = _automation.CreateAndCondition(enabledControlCondition, conditionOnScreen);
+            conditions = _automation.CreateAndCondition(conditions, conditionOnScreen);
 
-            var elementArray = automationElement.FindAll(TreeScope.TreeScope_Children, condition);
+            //var clickable = _automation.CreatePropertyCondition(UIA_PropertyIds.UIA_IsControlElementPropertyId, true);
+            //conditions = _automation.CreateAndCondition(conditions, clickable);
+
+            var elementArray = automationElement.FindAll(TreeScope.TreeScope_Children, conditions);
             var elementsQueue = new Queue<IUIAutomationElement>(10);
 
             for (var i = 0; i < elementArray.Length; ++i)
@@ -94,10 +97,21 @@ namespace HuntAndPeck.Services
             while (elementsQueue.Count > 0)
             {
                 var peek = elementsQueue.Dequeue();
-                var temp = peek.FindAll(TreeScope.TreeScope_Children, condition);
+                var temp = peek.FindAll(TreeScope.TreeScope_Children, conditions);
 
                 if (temp != null)
                 {
+                    // Try skipping elements with only a single child.
+                    if (temp.Length == 1)
+                    {
+                        var child = temp.GetElement(0);
+                        if (true || Intersect(peek.CurrentBoundingRectangle, child.CurrentBoundingRectangle))
+                        {
+                            elementsQueue.Enqueue(child);
+                            continue;
+                        }
+                    }
+
                     for (var i = 0; i < temp.Length; ++i)
                     {
                         elementsQueue.Enqueue(temp.GetElement(i));
@@ -106,6 +120,13 @@ namespace HuntAndPeck.Services
 
                 yield return peek;
             }
+        }
+
+        private bool Intersect(tagRECT r1, tagRECT r2) {
+            return !(r1.left > r2.right) &&
+               !(r1.right < r2.left) &&
+               !(r1.top > r2.bottom) &&
+               !(r1.bottom < r2.top);
         }
 
         /// <summary>

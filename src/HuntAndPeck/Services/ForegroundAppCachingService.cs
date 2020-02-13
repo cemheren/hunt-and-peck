@@ -83,7 +83,6 @@ namespace HuntAndPeck.Services
         public void Invalidate(IntPtr hWin)
         {
             this.processHintCache.TryRemove(hWin, out var _);
-            UpdateCache(hWin);
         }
 
         private IDictionary<IntPtr, string> GetOpenWindows()

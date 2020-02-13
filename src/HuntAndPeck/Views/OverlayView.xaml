@@ -12,7 +12,7 @@
     PreviewKeyDown="OverlayView_OnPreviewKeyDown">
     <local:ForegroundWindow.Resources>
         <Style x:Key="HintStyle" TargetType="TextBlock">
-            <Setter Property="Background" Value="Yellow" />
+            <Setter Property="Background" Value="Yellow"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Active}" Value="false">
                     <Setter Property="Background" Value="LightYellow" />
@@ -42,13 +42,13 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Rectangle Width="{Binding Hint.BoundingRectangle.Width}" Height="{Binding Hint.BoundingRectangle.Height}" Stroke="Red" StrokeDashArray="1 2">
+                        <Rectangle Width="{Binding Hint.BoundingRectangle.Width}" Height="{Binding Hint.BoundingRectangle.Height}">
                             <Rectangle.Fill>
-                                <SolidColorBrush Color="Yellow" Opacity="0.05" />
+                                <SolidColorBrush Color="Yellow" Opacity="0.00" />
                             </Rectangle.Fill>
                         </Rectangle>
-                        <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="1 1 0 0" Width="{Binding Hint.BoundingRectangle.Width}" Height="{Binding Hint.BoundingRectangle.Height}">
-                            <TextBlock Text="{Binding Label}" FontFamily="Courier New" FontWeight="ExtraBold" FontSize="32" Style="{StaticResource HintStyle}">
+                        <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-10 0 0 0" Width="{Binding Hint.BoundingRectangle.Width}" Height="{Binding Hint.BoundingRectangle.Height}">
+                            <TextBlock Text="{Binding Label}" FontFamily="Courier New" FontWeight="Bold" FontSize="32" Style="{StaticResource HintStyle}">
                             </TextBlock>
                         </Viewbox>
                     </Grid>
