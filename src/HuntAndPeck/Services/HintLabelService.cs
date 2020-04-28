@@ -17,7 +17,7 @@ namespace HuntAndPeck.Services
         /// <returns>A list of hint strings</returns>
         public IList<string> GetHintStrings(int hintCount)
         {
-            var hintCharacters = new[] { 's', 'a', 'd', 'j', 'k', 'l', 'e', 'w', 'c', 'm', 'p', 'g', 'h' };
+            var hintCharacters = new[] { 's', 'a', 'd', 'q', 't', 'l', 'e', 'w', 'c', 'm', 'p', 'g', 'h' };
             var digitsNeeded = (int)Math.Ceiling(Math.Log(hintCount) / Math.Log(hintCharacters.Length));
 
             var shortHintCount = Math.Floor((Math.Pow(hintCharacters.Length, digitsNeeded) - hintCount) / hintCharacters.Length);
