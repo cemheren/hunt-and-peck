@@ -14,16 +14,4 @@ namespace HuntAndPeck.Services.Interfaces
         /// </summary>
         public int RegistrationId { get; set; }
     }
-
-    /// <summary>
-    /// Service for listening to global keyboard shortcuts
-    /// </summary>
-    internal interface IKeyListenerService
-    {
-        event EventHandler OnHotKeyActivated;
-        event EventHandler OnDebugHotKeyActivated;
-
-        HotKey HotKey { get; set; }
-        HotKey DebugHotKey { get; set; }
-    }
 }

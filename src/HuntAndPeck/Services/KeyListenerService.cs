@@ -2,28 +2,28 @@
 using System;
 using System.Windows.Forms;
 using HuntAndPeck.Services.Interfaces;
+using System.Collections.Generic;
 
 namespace HuntAndPeck.Services
 {
-    internal class KeyListenerService : Form, IKeyListenerService, IDisposable
+    internal class KeyListenerService : Form, IDisposable
     {
-        public event EventHandler OnHotKeyActivated;
-        public event EventHandler OnDebugHotKeyActivated;
-
         /// <summary>
         /// Global counter for assigning ids to identiy the hot key registration
         /// </summary>
         private int _hotkeyIdCounter = 0;
 
-        private HotKey _hotKey;
-        private HotKey _debugHotKey;
+        private Dictionary<uint, Dictionary<uint, (int registrationId, Action action)>> hotkeyActions = new Dictionary<uint, Dictionary<uint, (int registrationId, Action action)>>();
 
-        /// <summary>
-        /// Re-registers the current hotkey, unregistering any previous key
-        /// </summary>
-        private void ReRegisterHotKey(HotKey hotKey)
+        public void RegisterKey(HotKey hotKey, Action hotkeyAction)
         {
-            // Already registered, have to unregister first
+            var hk = this.GetSavedHotKey(hotKey.Keys, hotKey.Modifier);
+
+            if (hk != null)
+            {
+                return;
+            }
+
             if (hotKey.RegistrationId > 0)
             {
                 User32.UnregisterHotKey(Handle, hotKey.RegistrationId);
@@ -31,35 +31,28 @@ namespace HuntAndPeck.Services
 
             hotKey.RegistrationId = _hotkeyIdCounter++;
             User32.RegisterHotKey(Handle, hotKey.RegistrationId, (uint)hotKey.Modifier, (uint)hotKey.Keys);
-        }
 
-        /// <summary>
-        /// Gets/sets the current hotkey
-        /// </summary>
-        /// <remarks>Changing this will cause the current hotkey to be unregistered</remarks>
-        public HotKey HotKey
-        {
-            get
+            Dictionary<uint, (int registrationId, Action action)> modifierPart;
+            if (this.hotkeyActions.TryGetValue((uint)hotKey.Keys, out modifierPart))
             {
-                return _hotKey;
+                modifierPart.Add((uint)hotKey.Modifier, (hotKey.RegistrationId, hotkeyAction));
             }
-            set
+            else
             {
-                _hotKey = value;
-                ReRegisterHotKey(_hotKey);
+                modifierPart = new Dictionary<uint, (int registrationId, Action action)>();
+                modifierPart.Add((uint)hotKey.Modifier, (hotKey.RegistrationId, hotkeyAction));
+                this.hotkeyActions.Add((uint)hotKey.Keys, modifierPart);
             }
         }
 
-        public HotKey DebugHotKey
+        public void UnregisterKey(HotKey hotKey)
         {
-            get
+            var hk = this.GetSavedHotKey(hotKey.Keys, hotKey.Modifier);
+
+            if (hk != null)
             {
-                return _debugHotKey;
-            }
-            set
-            {
-                _debugHotKey = value;
-                ReRegisterHotKey(_debugHotKey);
+                this.hotkeyActions[(uint)hotKey.Keys].Remove((uint)hotKey.Modifier);
+                User32.UnregisterHotKey(Handle, hotKey.RegistrationId);
             }
         }
 
@@ -68,27 +61,27 @@ namespace HuntAndPeck.Services
             if (m.Msg == Constants.WM_HOTKEY)
             {
                 var e = new HotKeyEventArgs(m.LParam);
+                var hk = this.GetSavedHotKey(e.Key, e.Modifiers);
 
-                // Normal hotkey
-                if (_hotKey != null &&
-                    e.Key == _hotKey.Keys &&
-                    e.Modifiers == _hotKey.Modifier &&
-                    OnHotKeyActivated != null)
-                {
-                    OnHotKeyActivated(this, new EventArgs());
-                }
-
-                // Debug hotkey
-                if (_debugHotKey != null &&
-                    e.Key == _debugHotKey.Keys &&
-                    e.Modifiers == _debugHotKey.Modifier &&
-                    OnDebugHotKeyActivated != null)
-                {
-                    OnDebugHotKeyActivated(this, new EventArgs());
-                }
+                hk?.action();
             }
 
             base.WndProc(ref m);
+        }
+
+        private (int registrationId, Action action)? GetSavedHotKey(Keys key, KeyModifier modifiers)
+        {
+            Dictionary<uint, (int, Action)> modifierPart;
+            if (this.hotkeyActions.TryGetValue((uint)key, out modifierPart))
+            {
+                (int registrationId, Action action) registrationIdActionPair;
+                if (modifierPart.TryGetValue((uint)modifiers, out registrationIdActionPair))
+                {
+                    return registrationIdActionPair;
+                }
+            }
+
+            return null;
         }
 
         protected override void SetVisibleCore(bool value)

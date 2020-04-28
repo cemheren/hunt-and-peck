@@ -1,29 +1,13 @@
-# hunt-n-peck
-[![Build status](https://ci.appveyor.com/api/projects/status/jet85wsdqn10grhk/branch/master?svg=true)](https://ci.appveyor.com/project/zsims/hunt-and-peck/branch/master)
+# hunt-n-peck-v2
+this repo improves upon the original hunt-and-peck repo. 
 
-Simple vimium/vimperator style navigation for Windows applications based on the UI Automation framework. In essence, it works the same as screen readers or accessibility programs but with the goal of making any Windows program faster to use.
+Additions
+1. Added a caching layer that helps with perceived performance. Still only viable in powerful desktop computers.
+2. Added a state machine similar to to vim - f, i, j and k keys. 
+3. Some mouse operations. 
+4. Code cleanup. 
+5. Some visual changes on how the hints are displayed. 
+6. Removed randomness on hints that was annoying me. 
 
-It works for any Windows program (excluding Modern UI apps :))
-
-# Download
-
-https://github.com/zsims/hunt-and-peck/releases/tag/release%2F1.4
-
-# Screenshots
-
-![ScreenShot](https://raw.github.com/zsims/hunt-n-peck/master/screenshots/explorer.png)
-![ScreenShot](https://raw.github.com/zsims/hunt-n-peck/master/screenshots/visual-studio.png)
-
-## To use
-
-1. Launch the executable.
-2. With any window focused, press Alt + ;
-3. An overlay window will be displayed, type any of the hint characters you see.
-
-Alternatively, Hunt and Peck can be launched via the command-line or AutoHotKey by specifying `/hint`:
-```
-hap.exe /hint
-```
-
-# Supported Elements
-Only UI Automation elements with "Invoke" patterns are supported (and displayed).
+There are some bugs on the caching side I'm working on now. 
+Mainly maintaining this project because it helps with the carpal tunnel pain (not using mouse)

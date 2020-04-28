@@ -51,6 +51,7 @@
     <Compile Include="HotKeyEventArgs.cs" />
     <Compile Include="Kernel32.cs" />
     <Compile Include="KeyModifier.cs" />
+    <Compile Include="MouseSimulator.cs" />
     <Compile Include="POINT.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RECT.cs" />
