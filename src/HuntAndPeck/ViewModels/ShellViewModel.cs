@@ -57,6 +57,12 @@ namespace HuntAndPeck.ViewModels
             Modifier = KeyModifier.Control
         };
 
+        private HotKey right_win = new HotKey
+        {
+            Keys = Keys.R,
+            Modifier = KeyModifier.Alt
+        };
+        
         public ShellViewModel(
             Action<OverlayViewModel> showOverlay,
             Action<DebugOverlayViewModel> showDebugOverlay,
@@ -74,6 +80,8 @@ namespace HuntAndPeck.ViewModels
             _debugHintProviderService = debugHintProviderService;
 
             this.keyListener = keyListener;
+            keyListener.RegisterKey(right_win, MouseRightClick);
+
             keyListener.RegisterKey(f_key, f_keyActivated);
             keyListener.RegisterKey(j_key, j_keyActivated);
             keyListener.RegisterKey(k_key, k_keyActivated);
@@ -93,11 +101,6 @@ namespace HuntAndPeck.ViewModels
 
         private void f_keyActivated()
         {
-            if (this.insertMode)
-            {
-                return;
-            }
-
             keyListener.RegisterKey(esc_key, esc_KeyActivated);
             var foregroundWindow = User32.GetForegroundWindow();
 
@@ -117,6 +120,11 @@ namespace HuntAndPeck.ViewModels
         private void esc_KeyActivated()
         {
             keyListener.UnregisterKey(esc_key);
+            keyListener.RegisterKey(f_key, f_keyActivated);
+            keyListener.RegisterKey(i_key, i_keyActivated);
+            keyListener.RegisterKey(j_key, j_keyActivated);
+            keyListener.RegisterKey(k_key, k_keyActivated);
+
             if (this.currentOverlays.Any())
             {
                 foreach (var overlay in this.currentOverlays)
@@ -160,6 +168,11 @@ namespace HuntAndPeck.ViewModels
         private void k_keyActivated()
         {
             MouseInput.ScrollWheel(6);
+        }
+
+        private void MouseRightClick()
+        {
+            MouseInput.RightClick();
         }
 
         public void Exit()
